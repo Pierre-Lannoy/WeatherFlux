@@ -72,7 +72,7 @@ class ConsoleFormatter implements FormatterInterface {
 		$line  = date( 'Y-m-d H:i:s' ) . ' ';
 		$level = str_pad ( Logger::getLevelName( $record['level'] ), 10, ' ', STR_PAD_RIGHT );
 		if ( array_key_exists( 'context', $record ) && array_key_exists( 'code', $record['context'] ) ) {
-			$code = str_pad ( (int) $record['context']['code'], 3, '0', STR_PAD_LEFT );
+			$code = str_pad ( (string) (int) $record['context']['code'], 3, '0', STR_PAD_LEFT );
 		} else {
 			$code = '---';
 		}

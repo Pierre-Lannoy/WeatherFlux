@@ -56,7 +56,7 @@ class Engine {
 		$this->logger->notice( 'Test');
 		$this->logger->info( 'Test');
 		$this->logger->warning( 'Test');
-		$this->logger->error( 'Test');
+		$this->logger->error( 'Test', ['code'=>500]);
 		$this->logger->critical( 'Test');
 		$this->logger->alert( 'Test');
 		$this->logger->emergency( 'Test');
