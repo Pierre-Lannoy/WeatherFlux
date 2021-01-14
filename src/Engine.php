@@ -52,10 +52,15 @@ class Engine {
 	 * @since   1.0.0
 	 */
 	private function start() {
-		$this->logger->warning( 'test');
+		$this->logger->debug( 'Test');
+		$this->logger->notice( 'Test');
+		$this->logger->info( 'Test');
+		$this->logger->warning( 'Test');
+		$this->logger->error( 'Test');
+		$this->logger->critical( 'Test');
+		$this->logger->alert( 'Test');
+		$this->logger->emergency( 'Test');
 	}
-
-
 
 	/**
 	 * Create an in stance if needed, then run it.

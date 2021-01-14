@@ -15,6 +15,7 @@
 namespace WeatherFlux\Logging;
 
 use Monolog\Formatter\FormatterInterface;
+use Monolog\Logger;
 
 /**
  * Define the Monolog console formatter.
@@ -32,7 +33,23 @@ class ConsoleFormatter implements FormatterInterface {
 	 * @since  1.0.0
 	 * @var    boolean    $colored    Has the output to be colored?.
 	 */
-	private $colored = true;
+	private $colored;
+
+	/**
+	 * This is a static variable and not a constant to serve as an extension point for custom levels
+	 *
+	 * @var array<int, string> $levels Logging levels with the levels as key
+	 */
+	private static $colors = [
+		Logger::DEBUG     => '',
+		Logger::INFO      => '36',
+		Logger::NOTICE    => '34',
+		Logger::WARNING   => '33',
+		Logger::ERROR     => '31',
+		Logger::CRITICAL  => '31;1',
+		Logger::ALERT     => '35;1',
+		Logger::EMERGENCY => '35;5',
+	];
 
 	/**
 	 * Initialize the class and set its properties.
@@ -52,101 +69,24 @@ class ConsoleFormatter implements FormatterInterface {
 	 * @since   1.0.0
 	 */
 	public function format( array $record ): string {
-		$message = date( 'Y-m-d H:i:s' );
-		/*$values              = array();
-		$values['timestamp'] = date( 'Y-m-d H:i:s' );
-		if ( array_key_exists( 'level', $record ) ) {
-			if ( array_key_exists( $record['level'], EventTypes::$level_names ) ) {
-				$values['level'] = strtolower( EventTypes::$level_names[ $record['level'] ] );
-			}
-		}
-		if ( array_key_exists( 'channel', $record ) ) {
-			$values['channel'] = strtolower( $record['channel'] );
+		$line  = date( 'Y-m-d H:i:s' ) . ' ';
+		$level = str_pad ( Logger::getLevelName( $record['level'] ), 10, ' ', STR_PAD_RIGHT );
+		if ( array_key_exists( 'context', $record ) && array_key_exists( 'code', $record['context'] ) ) {
+			$code = str_pad ( (int) $record['context']['code'], 3, '0', STR_PAD_LEFT );
+		} else {
+			$code = '---';
 		}
 		if ( array_key_exists( 'message', $record ) ) {
-			$values['message'] = substr( $record['message'], 0, 65000 );
+			$message = $record['message'];
+		} else {
+			$message = '<no message>';
 		}
-		// Context formatting.
-		if ( array_key_exists( 'context', $record ) ) {
-			$context = $record['context'];
-			if ( array_key_exists( 'class', $context ) ) {
-				if ( in_array( $context['class'], ClassTypes::$classes, true ) ) {
-					$values['class'] = strtolower( $context['class'] );
-				}
-			}
-			if ( array_key_exists( 'component', $context ) ) {
-				$values['component'] = substr( $context['component'], 0, 26 );
-			}
-			if ( array_key_exists( 'version', $context ) ) {
-				$values['version'] = substr( $context['version'], 0, 13 );
-			}
-			if ( array_key_exists( 'code', $context ) ) {
-				$values['code'] = (int) $context['code'];
-			}
+		if ( defined( '\STDOUT' ) && posix_isatty( \STDOUT ) ) {
+			$line = sprintf( "%s\033[%sm%s\033[0m %s", $line, $this->colored ? self::$colors[ Logger::toMonologLevel( $record['level'] ) ] : '', $level . ' [' . $code . ']', $message );
+		} else {
+			$line .= ' ' . $level . ' [' . $code . '] ' . $message;
 		}
-		// Extra formatting.
-		if ( array_key_exists( 'extra', $record ) ) {
-			$extra = $record['extra'];
-			if ( array_key_exists( 'siteid', $extra ) ) {
-				$values['site_id'] = (int) $extra['siteid'];
-			}
-			if ( array_key_exists( 'sitename', $extra ) && is_string( $extra['sitename'] ) ) {
-				$values['site_name'] = substr( $extra['sitename'], 0, 250 );
-			}
-			if ( array_key_exists( 'userid', $extra ) && is_numeric( $extra['userid'] ) ) {
-				$values['user_id'] = substr( (string) $extra['userid'], 0, 66 );
-			}
-			if ( array_key_exists( 'username', $extra ) && is_string( $extra['username'] ) ) {
-				$values['user_name'] = substr( $extra['username'], 0, 250 );
-			}
-			if ( array_key_exists( 'ip', $extra ) && is_string( $extra['ip'] ) ) {
-				$values['remote_ip'] = substr( $extra['ip'], 0, 66 );
-			}
-			if ( array_key_exists( 'url', $extra ) && is_string( $extra['url'] ) ) {
-				$values['url'] = substr( $extra['url'], 0, 2083 );
-			}
-			if ( array_key_exists( 'http_method', $extra ) && is_string( $extra['http_method'] ) ) {
-				if ( in_array( strtolower( $extra['http_method'] ), Http::$verbs, true ) ) {
-					$values['verb'] = strtolower( $extra['http_method'] );
-				}
-			}
-			if ( array_key_exists( 'server', $extra ) && is_string( $extra['server'] ) ) {
-				$values['server'] = substr( $extra['server'], 0, 250 );
-			}
-			if ( array_key_exists( 'referrer', $extra ) && $extra['referrer'] && is_string( $extra['referrer'] ) ) {
-				$values['referrer'] = substr( $extra['referrer'], 0, 250 );
-			}
-			if ( array_key_exists( 'ua', $extra ) && $extra['ua'] && is_string( $extra['ua'] ) ) {
-				$values['user_agent'] = substr( $extra['ua'], 0, 1024 );
-			}
-			if ( array_key_exists( 'file', $extra ) && $extra['file'] && is_string( $extra['file'] ) ) {
-				$values['file'] = substr( $extra['file'], 0, 250 );
-			}
-			if ( array_key_exists( 'line', $extra ) && $extra['line'] ) {
-				$values['line'] = (int) $extra['line'];
-			}
-			if ( array_key_exists( 'class', $extra ) && $extra['class'] && is_string( $extra['class'] ) ) {
-				$values['classname'] = substr( $extra['class'], 0, 100 );
-			}
-			if ( array_key_exists( 'function', $extra ) && $extra['function'] && is_string( $extra['function'] ) ) {
-				$values['function'] = substr( $extra['function'], 0, 100 );
-			}
-			if ( array_key_exists( 'trace', $extra ) && $extra['trace'] ) {
-				// phpcs:ignore
-				$s = serialize( $extra['trace'] );
-				if ( strlen( $s ) < 65000 ) {
-					$values['trace'] = $s;
-				} else {
-					$s          = [];
-					$s['error'] = 'This backtrace was not recorded: size exceeds limit.';
-					// phpcs:ignore
-					$values['trace'] = serialize( $s );
-				}
-			}
-		}
-		$message[] = $values;*/
-		// phpcs:ignore
-		return $message . PHP_EOL;
+		return $line . PHP_EOL;
 	}
 	/**
 	 * Formats a set of log records.
