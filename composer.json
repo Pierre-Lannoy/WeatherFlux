@@ -2,7 +2,7 @@
   "name": "pierrelannoy/weatherflux",
   "description": "A gateway to listen WeatherFlow stations on a local network and write weather data in InfluxDB 2.",
   "minimum-stability": "stable",
-  "license": "mit",
+  "license": "MIT",
   "authors": [
     {
       "name": "Pierre Lannoy",
