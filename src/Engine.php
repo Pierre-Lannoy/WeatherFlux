@@ -44,6 +44,7 @@ class Engine {
 	private function __construct() {
 		$this->logger = new Logger('console');
 		$this->logger->pushHandler( new ConsoleHandler() );
+		$this->logger->debug( 'Logger started.');
 	}
 
 	/**
@@ -52,18 +53,11 @@ class Engine {
 	 * @since   1.0.0
 	 */
 	private function start() {
-		$this->logger->debug( 'Test');
-		$this->logger->notice( 'Test');
-		$this->logger->info( 'Test');
-		$this->logger->warning( 'Test');
-		$this->logger->error( 'Test', ['code'=>500]);
-		$this->logger->critical( 'Test');
-		$this->logger->alert( 'Test');
-		$this->logger->emergency( 'Test');
+
 	}
 
 	/**
-	 * Create an in stance if needed, then run it.
+	 * Create an instance if needed, then run it.
 	 *
 	 * @since   1.0.0
 	 */

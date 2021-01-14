@@ -52,7 +52,7 @@ class ConsoleHandler extends AbstractProcessingHandler {
 	 * @param   boolean $bubble   Optional. Has the record to bubble?.
 	 * @since    1.0.0
 	 */
-	public function __construct( bool $colored = true, $level = Logger::INFO, bool $bubble = true ) {
+	public function __construct( bool $colored = true, $level = Logger::DEBUG, bool $bubble = true ) {
 		parent::__construct( $level, $bubble );
 		$this->colored = $colored;
 		$this->stream = fopen( 'php://output', 'w' );
