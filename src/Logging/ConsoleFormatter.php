@@ -41,9 +41,9 @@ class ConsoleFormatter implements FormatterInterface {
 	 * @var array<int, string> $levels Logging levels with the levels as key
 	 */
 	private static $colors = [
-		Logger::DEBUG     => '',
-		Logger::INFO      => '36',
-		Logger::NOTICE    => '34',
+		Logger::DEBUG     => '37',
+		Logger::INFO      => '34',
+		Logger::NOTICE    => '36',
 		Logger::WARNING   => '33',
 		Logger::ERROR     => '31',
 		Logger::CRITICAL  => '31;1',
