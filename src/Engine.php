@@ -16,6 +16,8 @@ namespace WeatherFlux;
 
 use Workerman\Worker;
 use WeatherFlux\Logging\ConsoleHandler;
+use InfluxDB2\Client as InfluxClient;
+use InfluxDB2\Model\WritePrecision as InfluxWritePrecision;
 use \Monolog\Logger;
 
 class Engine {
@@ -51,6 +53,14 @@ class Engine {
 	 * @var     array   $static_fields     Static fields to add.
 	 */
 	private static $static_fields = [];
+
+	/**
+	 * Connexion options.
+	 *
+	 * @since   1.0.0
+	 * @var     array   $influx_connection     The InfluxDB2 connexion options.
+	 */
+	private static $influx_connection = [];
 
 	/**
 	 * Sensor status.
@@ -159,6 +169,14 @@ class Engine {
 	private $logger = null;
 
 	/**
+	 * The InfluxDB2 client.
+	 *
+	 * @since   1.0.0
+	 * @var     \InfluxDB2\Client  $influx     Maintains the InfluxDB2 client.
+	 */
+	private $influx = null;
+
+	/**
 	 * Initializes the instance and set its properties.
 	 *
 	 * @since   1.0.0
@@ -166,6 +184,24 @@ class Engine {
 	private function __construct() {
 		$this->logger = new Logger('console');
 		$this->logger->pushHandler( new ConsoleHandler() );
+		if ( ! self::$observation ) {
+			try {
+				$client       = new InfluxClient( array_merge( self::$influx_connection, [ 'precision' => InfluxWritePrecision::MS ] ) );
+				$this->influx = $client->createWriteApi();
+			} catch ( \Throwable $e ) {
+				$this->logger->error( $e->getMessage(), [ 'code' => $e->getCode() ] );
+				$this->abort();
+			}
+		}
+	}
+
+	/**
+	 * Initializes the instance and set its properties.
+	 *
+	 * @since   1.0.0
+	 */
+	private function abort() {
+		exit;
 	}
 
 	/**
@@ -529,15 +565,11 @@ class Engine {
 						$lines = array_merge( $lines, $this->special_lines( $d ) );
 					}
 					foreach ($lines as $line ) {
-
-
-
-
-
-
-
-
-						$this->logger->debug( $line );
+						try {
+							$this->influx->write( $line );
+						} catch ( \Throwable $e ) {
+							$this->logger->warning( 'Unable to write a record: ' . $e->getMessage(), [ 'code' => $e->getCode() ] );
+						}
 					}
 				} else {
 					$this->logger->debug( sprintf( 'Message dropped: event filtered (%s).', $d['type'] ) );
@@ -626,6 +658,9 @@ class Engine {
 		}
 		if ( array_key_exists( 'fields', $options ) ) {
 			self::$static_fields = $options['fields'];
+		}
+		if ( array_key_exists( 'influxb', $options ) ) {
+			self::$influx_connection = $options['influxb'];
 		}
 		if ( array_key_exists( 'unit-system', $options ) && is_array( $options['unit-system'] ) && in_array( 'strict', $options['unit-system'] ) ) {
 			self::$strict_isu = true;
