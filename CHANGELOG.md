@@ -6,8 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- New failsafe if no (or corrupted) config file.
 - New changelog file.
-- New Code Of Conduct and contributing help.
+- New Code Of Conduct and contribution help.
 
 ### Changed
 - New releases are now automatically pushed on [Packagist](https://packagist.org/packages/weatherflux/weatherflux).

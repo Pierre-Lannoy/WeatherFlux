@@ -161,6 +161,14 @@ class Engine {
 	private static $devices = [];
 
 	/**
+	 * Status of the config file.
+	 *
+	 * @since   1.0.0
+	 * @var     boolean $config_file    Status of the config file.
+	 */
+	private static $config_file = false;
+
+	/**
 	 * The logger instance.
 	 *
 	 * @since   1.0.0
@@ -184,6 +192,10 @@ class Engine {
 	private function __construct() {
 		$this->logger = new Logger('console');
 		$this->logger->pushHandler( new ConsoleHandler() );
+		if ( ! self::$config_file ) {
+			$this->logger->emergency( 'Unable to go further: wrong configuration file or content.' );
+			$this->abort();
+		}
 		if ( ! self::$observation ) {
 			try {
 				$client       = new InfluxClient( array_merge( self::$influx_connection, [ 'precision' => InfluxWritePrecision::MS ] ) );
@@ -647,7 +659,7 @@ class Engine {
 	 * @since   1.0.0
 	 */
 	private static function options( $options ) {
-		if ( ! is_array( $options ) ) {
+		if ( ! is_array( $options ) || 0 === count( $options ) ) {
 			return;
 		}
 		if ( array_key_exists( 'filters', $options ) ) {
@@ -661,6 +673,7 @@ class Engine {
 		}
 		if ( array_key_exists( 'influxb', $options ) ) {
 			self::$influx_connection = $options['influxb'];
+			self::$config_file = true;
 		}
 		if ( array_key_exists( 'unit-system', $options ) && is_array( $options['unit-system'] ) && in_array( 'strict', $options['unit-system'] ) ) {
 			self::$strict_isu = true;
