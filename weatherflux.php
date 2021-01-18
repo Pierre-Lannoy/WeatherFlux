@@ -15,7 +15,7 @@
 use WeatherFlux\Engine;
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/autoload.php';
-require_once __DIR__ . '/options.php';
+require_once __DIR__ . '/config.php';
 
 define( 'WF_NAME', 'WeatherFlux' );
 define( 'WF_VERSION', '1.0.0-dev' );
