@@ -3,7 +3,7 @@
 ![php](https://badgen.net/badge/php/7.4+/green)
 ![license](https://badgen.net/github/license/Pierre-Lannoy/WeatherFlux/)
 
-WeatherFlux is a simple gateway that listen on the local network for messages sent by WeatherFlow station(s) and send them to an [InfluxDB 2.x](https://www.influxdata.com/products/influxdb/) server. It supports 
+WeatherFlux is a simple gateway that listen on the local network for messages sent by WeatherFlow station(s) and send them to an [InfluxDB 2.x](https://www.influxdata.com/products/influxdb/) server.
 
 You can run WeatherFlux on any POSIX compatible operating system (Linux, OSX, BSD) as a console tool or a deamon.
 
@@ -17,12 +17,47 @@ composer require weatherflux/weatherflux
 
 ## Configuring WeatherFlux
 
+Start by creating a new configuration file named `config.php`:
+
+```console
+pierre@dev:~$ cp config-sample.php config.php
+```
+
+Then, edit this file to match your environment and your needs.
+
+If you simply set `influxb` parameters in this file, all WeatherFlow messages will be sent to your InfluxDB instance with maximum level/fields details.
 
 ## Running WeatherFlux
 
+To just listen the local network and display discovered devices (without recording anything), start WeatherFlux in **o***bserver* mode
 
+```console
+pierre@dev:~$ php weatherflux.php start -o
+```
+
+To listen the local network and send data to InfluxDB (with console output), start WeatherFlux in **c***onsole* mode
+
+```console
+pierre@dev:~$ php weatherflux.php start -c
+```
+
+To listen the local network and send data to InfluxDB (unattended), start WeatherFlux in **d***aemon* mode
+
+```console
+pierre@dev:~$ php weatherflux.php start -d
+```
+
+If WeatherFlux is started in daemon mode, you can stop it as follow:
+
+```console
+pierre@dev:~$ php weatherflux.php stop
+```
+
+For other modes, just hit `CTRL+C` to stop it.
 
 ## Fields units and meaning
+
+Data processed by WeatherFlux is expressed with units from [ISU](https://en.wikipedia.org/wiki/International_System_of_Units). It may involve conversion regarding the `unit-system` option set in `config.php`.
 
 | Field | Strict ISU | Derived ISU | Meaning |  Note |
 | --- | :---: | :---: | --- | --- |
