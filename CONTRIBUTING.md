@@ -4,12 +4,14 @@ Hello and welcome in this short guide which aims to help you figure out how you 
 
 Note: to make this repository a safe place to contribute, WeatherFlux has a [Code of Conduct](/CODE_OF_CONDUCT.md)
 
-## Submitting bugs, making suggestions, proposing new features
-If you'd like to do it, start by searching through the [issues](https://github.com/Pierre-Lannoy/WeatherFlux/issues) and [pull requests](https://github.com/Pierre-Lannoy/WeatherFlux/pulls) to see whether someone else has raised a similar idea or found the same bug.
+## Submitting bugs
+
+If you'd like to do it, start by searching through the [issues](https://github.com/Pierre-Lannoy/WeatherFlux/issues) and [pull requests](https://github.com/Pierre-Lannoy/WeatherFlux/pulls) to see whether someone else has found the same bug.
 
 If you know how to fix the bug or implement your new feature, please open an issue first to discuss it before submitting a pull request - unless it is a small fix (in which case you can do so directly).
 
-> ### _Community_
-> _Discussions about WeatherFlux take place on this repository's [issues](https://github.com/Pierre-Lannoy/WeatherFlux/issues) and [pull requests](https://github.com/Pierre-Lannoy/WeatherFlux/pulls) sections. Anybody is welcome to join these conversations._
-> 
-> _Wherever possible, do not take these conversations to private channels, including contacting the maintainers directly. Keeping communication public means everybody can benefit and learn from the conversation._
+## Asking for help, making suggestions, proposing new features
+
+Discussions about WeatherFlux take place on this repository's [discussions](https://github.com/Pierre-Lannoy/WeatherFlux/discussions) section. Anybody is welcome to join these conversations.
+
+Wherever possible, do not take these conversations to private channels, including contacting the maintainers directly. Keeping communication public means everybody can benefit and learn from the conversation.
