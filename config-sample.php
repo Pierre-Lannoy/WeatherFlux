@@ -18,9 +18,6 @@ $options = [
 	 * == InfluxDB2 connexion parameters                       ==
 	 * ==========================================================
 	 *
-	 * It's a pass-through filter so, only messages from these type will be sent to InfluxDB.
-	 * Values: evt_precip / evt_strike / rapid_wind / obs_air / obs_sky / obs_st / device_status / hub_status
-	 *
 	 */
 	'influxb' => [
 		'url' => 'http://localhost:8086',
