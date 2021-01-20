@@ -22,6 +22,6 @@ if ( file_exists( __DIR__ . '/config.php' ) ) {
 }
 
 define( 'WF_NAME', 'WeatherFlux' );
-define( 'WF_VERSION', '1.1.0' );
+define( 'WF_VERSION', '1.1.1' );
 
 Engine::run( $options );
