@@ -13,8 +13,13 @@
  */
 
 use WeatherFlux\Engine;
-require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/src/autoload.php';
+if ( file_exists( __DIR__ . '/../../../vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/../../../vendor/autoload.php';
+} elseif ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+	require_once __DIR__ . '/src/autoload.php';
+}
+
 
 $options = [];
 if ( file_exists( __DIR__ . '/config.php' ) ) {
@@ -22,6 +27,6 @@ if ( file_exists( __DIR__ . '/config.php' ) ) {
 }
 
 define( 'WF_NAME', 'WeatherFlux' );
-define( 'WF_VERSION', '1.1.1' );
+define( 'WF_VERSION', '1.1.2' );
 
 Engine::run( $options );

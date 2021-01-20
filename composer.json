@@ -1,6 +1,6 @@
 {
   "name": "weatherflux/weatherflux",
-  "type"  : "project",
+  "type"  : "library",
   "description": "A gateway to listen WeatherFlow stations on a local network and write weather data in InfluxDB 2.",
   "keywords": ["weatherflow", "weather", "influxdb"],
   "minimum-stability": "stable",
