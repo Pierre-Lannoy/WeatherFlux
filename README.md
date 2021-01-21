@@ -20,7 +20,7 @@ composer require weatherflux/weatherflux
 Start by creating a new configuration file named `config.php`:
 
 ```console
-pierre@dev:~$ cp vendor/weatherflux/config-sample.php vendor/weatherflux/config.php
+pierre@dev:~$ cp vendor/weatherflux/weatherflux/config-sample.php vendor/weatherflux/weatherflux/config.php
 ```
 
 Then, edit this file to match your environment and your needs.
@@ -32,25 +32,25 @@ If you simply set `influxb` parameters in this file, all WeatherFlow messages wi
 To just listen the local network and display discovered devices (without recording anything), start WeatherFlux in **o***bserver* mode
 
 ```console
-pierre@dev:~$ php vendor/weatherflux/weatherflux.php start -o
+pierre@dev:~$ php vendor/weatherflux/weatherflux/weatherflux.php start -o
 ```
 
 To listen the local network and send data to InfluxDB (with console output), start WeatherFlux in **c***onsole* mode
 
 ```console
-pierre@dev:~$ php vendor/weatherflux/weatherflux.php start -c
+pierre@dev:~$ php vendor/weatherflux/weatherflux/weatherflux.php start -c
 ```
 
 To listen the local network and send data to InfluxDB (unattended), start WeatherFlux in **d***aemon* mode
 
 ```console
-pierre@dev:~$ php vendor/weatherflux/weatherflux.php start -d
+pierre@dev:~$ php vendor/weatherflux/weatherflux/weatherflux.php start -d
 ```
 
 If WeatherFlux is started in daemon mode, you can stop it as follow:
 
 ```console
-pierre@dev:~$ php vendor/weatherflux/weatherflux.php stop
+pierre@dev:~$ php vendor/weatherflux/weatherflux/weatherflux.php stop
 ```
 
 For other modes, just hit `CTRL+C` to stop it.
