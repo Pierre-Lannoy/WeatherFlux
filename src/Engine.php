@@ -16,6 +16,7 @@ namespace WeatherFlux;
 
 use Workerman\Worker;
 use WeatherFlux\Logging\ConsoleHandler;
+use WeatherFlux\Logging\DockerConsoleHandler;
 use InfluxDB2\Client as InfluxClient;
 use InfluxDB2\Model\WritePrecision as InfluxWritePrecision;
 use \Monolog\Logger;
@@ -192,6 +193,9 @@ class Engine {
 	private function __construct() {
 		$this->logger = new Logger('console');
 		$this->logger->pushHandler( new ConsoleHandler() );
+		if ( file_exists( '/.dockerenv ') ) {
+			$this->logger->pushHandler( new DockerConsoleHandler() );
+		}
 		if ( ! self::$config_file ) {
 			$this->logger->emergency( 'Unable to go further: wrong configuration file or content.' );
 			$this->abort();
@@ -584,7 +588,7 @@ class Engine {
 						}
 					}
 				} else {
-					$this->logger->debug( sprintf( 'Message dropped: event filtered (%s).', $d['type'] ) );
+					$this->logger->debug( sprintf( 'Message dropped: %s event filtered.', $d['type'] ) );
 				}
 			}
 		} else {
