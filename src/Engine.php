@@ -606,7 +606,7 @@ class Engine {
 			$this->logger->emergency( 'Unable to create worker: ' . $e->getMessage(), [ 'code' => $e->getCode() ] );
 		}
 		$ws_worker->onWorkerStart = function( $worker ) {
-			$this->logger->notice( 'Launching' . WF_NAME . ' v' . WF_VERSION );
+			$this->logger->notice( 'Launching ' . WF_NAME . ' v' . WF_VERSION );
 			if ( self::$strict_isu ) {
 				$this->logger->warning( WF_NAME . ' running in strict-ISU mode.' );
 			}
