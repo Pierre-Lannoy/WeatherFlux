@@ -9,7 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - New log handler for logging in Docker.
 
 ### Changed
-- Improved startup sequence.
+- [BC] Configuration is now read from `config.json` file.
+- Improved logging mechanism.
 - Improved logging mechanism.
 
 ## [1.1.2] - 2021-01-20

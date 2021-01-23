@@ -1,0 +1,51 @@
+{
+  "logging":[],
+  "influxb": {
+    "url":"http://localhost:8086",
+    "org":"my-org",
+    "token":"my-token",
+    "bucket":"my-bucket"
+  },
+  "unit-system":["derived"],
+  "filters":["evt_precip","evt_strike","rapid_wind","obs_air","obs_sky","obs_st","device_status","hub_status"],
+  "tags": {
+    "*": {
+      "host":"iMac-de-Pierre.local",
+      "location":"Mouvaux - France"
+    },
+    "HB-00003922": {
+      "station":"weather",
+      "model":"WeatherFlow Hub",
+      "placement":"indoor",
+      "cluster":"station 1"
+    },
+    "AR-00012626":{
+      "station":"weather",
+      "model":"WeatherFlow Air",
+      "placement":"outdoor",
+      "cluster":"station 1"
+    },
+    "AR-00007949": {
+      "station":"weather",
+      "model":"WeatherFlow Air",
+      "placement":"indoor",
+      "cluster":"station 1"
+    },
+    "SK-00000700":{
+      "station":"weather",
+      "model":"WeatherFlow Sky",
+      "placement":"outdoor",
+      "cluster":"station 1"
+    }
+  },
+  "fields":{
+    "*":{
+      "latitude":50.7045,
+      "longitude":3.1354,
+      "altitude":55
+    },
+    "SK-00000700":{
+      "altitude":60
+    }
+  }
+}

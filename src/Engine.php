@@ -100,14 +100,6 @@ class Engine {
 	private $starting = true;
 
 	/**
-	 * Logs in startup phase.
-	 *
-	 * @since   2.0.0
-	 * @var     array $startup_log    Logs in startup phase.
-	 */
-	private $startup_log = [];
-
-	/**
 	 * Current statistics.
 	 *
 	 * @since   2.0.0
@@ -708,23 +700,6 @@ class Engine {
 	}
 
 	/**
-	 * Log startup.
-	 *
-	 * @since   2.0.0
-	 */
-	private function startup_log( $level, $message, $code = 0 ) {
-		if ( $this->starting ) {
-			$this->startup_log[] = [
-				'level'   => $level,
-				'message' => $message,
-				'code'    => $code,
-			];
-		} else {
-			self::$logger->addRecord( $level, $message, [ 'code' => $code ] );
-		}
-	}
-
-	/**
 	 * Start the engine.
 	 *
 	 * @since   2.0.0
@@ -733,13 +708,6 @@ class Engine {
 		self::$logger->notice( 'Starting ' . WF_NAME . ' v' . WF_VERSION . ' engine' );
 		if ( $this->strict_isu ) {
 			self::$logger->warning( WF_NAME . ' running in strict-ISU mode.' );
-		}
-
-
-		if ( 0 < $this->startup_log ) {
-			foreach ( $this->startup_log as $log ) {
-				self::$logger->addRecord( $log['level'], $log['message'], [ 'code' => $log['code'] ] );
-			}
 		}
 	}
 
