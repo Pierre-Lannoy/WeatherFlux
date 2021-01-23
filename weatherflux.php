@@ -12,21 +12,39 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-use WeatherFlux\Engine;
-if ( file_exists( __DIR__ . '/../../../vendor/autoload.php' ) ) {
-	require_once __DIR__ . '/../../../vendor/autoload.php';
-} elseif ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
-	require_once __DIR__ . '/vendor/autoload.php';
-	require_once __DIR__ . '/src/autoload.php';
-}
-
-
-$options = [];
-if ( file_exists( __DIR__ . '/config.php' ) ) {
-	require_once __DIR__ . '/config.php';
-}
-
 define( 'WF_NAME', 'WeatherFlux' );
-define( 'WF_VERSION', '1.1.2' );
+define( 'WF_VERSION', '2.0.0' );
 
-Engine::run( $options );
+$docker = file_exists( '/.dockerenv ');
+
+if ( $docker ) {
+	if ( file_exists( __DIR__ . '/../../../vendor/autoload.php' ) ) {
+		require_once __DIR__ . '/../../../vendor/autoload.php';
+	} else {
+		exit( 1 );
+	}
+	if ( file_exists( __DIR__ . '/../../../config/config.json' ) ) {
+		$config = __DIR__ . '/../../../config/config.json';
+	} else {
+		$config = '';
+	}
+} else {
+	if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+		require_once __DIR__ . '/vendor/autoload.php';
+		require_once __DIR__ . '/src/autoload.php';
+	} else {
+		exit( 1 );
+	}
+	if ( file_exists( __DIR__ . '/config.json' ) ) {
+		$config = __DIR__ . '/config.json';
+	} else {
+		$config = '';
+	}
+}
+
+if ( in_array('status', $argv, true ) && in_array('-h', $argv, true ) ) {
+	\WeatherFlux\Engine::healthcheck( $config, $docker );
+} else {
+	\WeatherFlux\Engine::run( $config, $docker );
+}
+
