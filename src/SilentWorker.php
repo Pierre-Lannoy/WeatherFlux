@@ -22,7 +22,8 @@ class SilentWorker extends \Workerman\Worker {
 	/**
 	 * Does not log.
 	 *
-	 * @param string $msg
+	 * @param string $msg The message to log.
+	 * @since   2.0.0
 	 */
 	public static function log( $msg ) {
 
