@@ -20,27 +20,15 @@ If you don't want - or can't - use the dockerized version of WeatherFlux, you ca
 composer require weatherflux/weatherflux
 ```
 
-The creating a configuration file named `config.json`:
+Then, creating a configuration file named `config.json`:
 
 ```console
 pierre@dev:~$ cp vendor/weatherflux/weatherflux/config-sample.json vendor/weatherflux/weatherflux/config.json
 ```
 
-Afe
+[Adjust the settings](/CONFIG.md) in this newly created file to match your environment and your needs.
 
-## Configuring WeatherFlux
-
-Start by creating a new configuration file named `config.php`:
-
-```console
-pierre@dev:~$ cp vendor/weatherflux/weatherflux/config-sample.php vendor/weatherflux/weatherflux/config.php
-```
-
-Then, edit this file to match your environment and your needs.
-
-If you simply set `influxb` parameters in this file, all WeatherFlow messages will be sent to your InfluxDB instance with maximum level/fields details.
-
-## Running WeatherFlux
+### Running WeatherFlux as standalone tool
 
 To just listen the local network and display discovered devices (without recording anything), start WeatherFlux in **o***bserver* mode
 
