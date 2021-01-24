@@ -1,41 +1,35 @@
 {
-  "logging":[],
   "influxb": {
     "url":"http://localhost:8086",
     "org":"my-org",
     "token":"my-token",
     "bucket":"my-bucket"
   },
-  "unit-system":["derived"],
+  "host": {
+    "override":"",
+    "drop":false
+  },
+  "isu-mode":"derived",
   "filters":["evt_precip","evt_strike","rapid_wind","obs_air","obs_sky","obs_st","device_status","hub_status"],
   "tags": {
     "*": {
-      "host":"iMac-de-Pierre.local",
-      "location":"Mouvaux - France"
+      "location":"My Location"
     },
-    "HB-00003922": {
+    "HB*": {
       "station":"weather",
-      "model":"WeatherFlow Hub",
-      "placement":"indoor",
-      "cluster":"station 1"
+      "model":"WeatherFlow Hub"
     },
-    "AR-00012626":{
+    "AR*": {
       "station":"weather",
-      "model":"WeatherFlow Air",
-      "placement":"outdoor",
-      "cluster":"station 1"
+      "model":"WeatherFlow Air"
     },
-    "AR-00007949": {
+    "SK*":{
       "station":"weather",
-      "model":"WeatherFlow Air",
-      "placement":"indoor",
-      "cluster":"station 1"
+      "model":"WeatherFlow Sky"
     },
-    "SK-00000700":{
+    "ST*":{
       "station":"weather",
-      "model":"WeatherFlow Sky",
-      "placement":"outdoor",
-      "cluster":"station 1"
+      "model":"WeatherFlow Tempest"
     }
   },
   "fields":{
