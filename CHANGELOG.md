@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [BC] Configuration is now read from `config.json` file.
 - Connection to InfluxDB is now tested before using it.
 - Static tags and fields now accept configuration per device type (see documentation).
+- Better tagging when `precipitation_type` is not specified (Sky and Tempest module).
 - Improved startup sequence.
 - Improved logging mechanism.
 - Improved error handling.

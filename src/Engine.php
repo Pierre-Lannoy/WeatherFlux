@@ -73,7 +73,7 @@ class Engine {
 	 * @since   2.0.0
 	 * @var     integer   $conf_reload  Configuration reloading interval in seconds. Overridden by WF_CONF_RELOAD env var.
 	 */
-	private static $conf_reload = 20;
+	private static $conf_reload = 120;
 
 	/**
 	 * Statistics publishing interval.
@@ -81,7 +81,7 @@ class Engine {
 	 * @since   2.0.0
 	 * @var     integer   $statistics   Statistics publishing interval in seconds. Overridden by WF_STAT_PUBLISH env var.
 	 */
-	private static $statistics = 30;
+	private static $statistics = 600;
 
 	/**
 	 * Running mode.
@@ -492,6 +492,8 @@ class Engine {
 									case 2:
 										$result['precipitation_type'] = 'hail';
 										break;
+									default:
+										$result['precipitation_type'] = 'none';
 								}
 							} else {
 								self::$logger->warning( sprintf(  '%s returned an unknown data format for %s message.', $data['serial_number'], $data['type'] ) );
@@ -776,9 +778,14 @@ class Engine {
 							}
 						} catch ( \Throwable $e ) {
 							$this->stat['unsent']++;
-							preg_match('/"message":"(.*)"\}/Ui', $e->getMessage(), $matches);
-							if ( 1 < count( $matches ) && '' !== $matches[1] ) {
-								$message = str_replace( '\"', '"', $matches[1] ) . '.';
+							preg_match('/"message":"(.*)("\}|\(truncated...\))/iU', $e->getMessage(), $matches);
+							if ( 2 < count( $matches ) && '' !== $matches[1] ) {
+								$message = str_replace( '\"', '"', $matches[1] );
+								if ( str_contains( $matches[2], 'truncated' ) ) {
+									$message .= '...';
+								} else {
+									$message .= '.';
+								}
 							} else {
 								$message = $e->getMessage();
 							}
@@ -809,6 +816,20 @@ class Engine {
 	}
 
 	/**
+	 * Prints the stats.
+	 *
+	 * @since   2.0.0
+	 */
+	private function stats() {
+		$tmp = [];
+		foreach ( $this->stat as $key => $count ) {
+			$tmp[] = $key . '=' . $count;
+		}
+		$duration = new Duration( time() - $this->start_time );
+		self::$logger->info( sprintf( 'Stats: %s in %s.', implode( ', ', $tmp ), $duration->humanize() ) );
+	}
+
+	/**
 	 * Start the engine.
 	 *
 	 * @since   1.0.0
@@ -827,12 +848,7 @@ class Engine {
 				$this->get_options();
 			} );
 			Timer::add(self::$statistics, function () {
-				$tmp = [];
-				foreach ( $this->stat as $key => $count ) {
-					$tmp[] = $key . '=' . $count;
-				}
-				$duration = new Duration( time() - $this->start_time );
-				self::$logger->info( sprintf( 'Stats: %s in %s.', implode( ', ', $tmp ), $duration->humanize() ) );
+				$this->stats();
 			} );
 			self::$logger->notice( 'Worker launched.' );
 			self::$logger->debug( 'Started listening on UDP port 50222.' );
@@ -840,6 +856,7 @@ class Engine {
 		};
 		$ws_worker->onWorkerStop = function( $worker ) {
 			self::$logger->debug( 'Stopped listening on UDP port 50222.' );
+			$this->stats();
 			self::$logger->notice( 'Worker stopped.' );
 		};
 		$ws_worker->onError = function( $connection, $code, $msg ) {
