@@ -18,7 +18,8 @@
     "ext-posix": "*",
     "monolog/monolog": "~2.2.0",
     "workerman/workerman": "~4.0.0",
-    "influxdata/influxdb-client-php": "~1.9.0"
+    "influxdata/influxdb-client-php": "~1.9.0",
+    "khill/php-duration": "~1.0"
   },
   "autoload": {
     "psr-4": {"WeatherFlux\\": "./src"}
