@@ -6,12 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased - will be 2.0.0]
 
 ### Added
-- New log handler for logging in Docker.
+- Configuration is now dynamic: you can change it w/o restarting WeatherFlux.
+- New log handler for logging in Docker logs (if running in Docker).
+- New configuration reloading (default 120s, set `WF_CONF_RELOAD` environment variable to change).
+- New statistics publishing (default 600s, set `WF_STAT_PUBLISH` environment variable to change).
 
 ### Changed
 - [BC] Configuration is now read from `config.json` file.
+- Connection to InfluxDB is now tested before using it.
+- Static tags and fields now accept configuration per device type (see documentation).
+- Improved startup sequence.
 - Improved logging mechanism.
-- Improved logging mechanism.
+- Improved error handling.
+
+### Removed
+- [BC] `config-sample.php` file as it is now unused.
 
 ## [1.1.2] - 2021-01-20
 

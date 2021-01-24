@@ -15,6 +15,8 @@
 define( 'WF_NAME', 'WeatherFlux' );
 define( 'WF_VERSION', '2.0.0' );
 
+//error_reporting(0);
+
 $docker = file_exists( '/.dockerenv ');
 
 if ( $docker ) {

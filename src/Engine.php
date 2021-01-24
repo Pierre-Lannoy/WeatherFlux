@@ -14,8 +14,8 @@
 
 namespace WeatherFlux;
 
-use Workerman\Worker;
 use Workerman\Timer;
+use Khill\Duration\Duration;
 use WeatherFlux\Logging\ConsoleHandler;
 use WeatherFlux\Logging\DockerConsoleHandler;
 use InfluxDB2\Client as InfluxClient;
@@ -73,7 +73,7 @@ class Engine {
 	 * @since   2.0.0
 	 * @var     integer   $conf_reload  Configuration reloading interval in seconds. Overridden by WF_CONF_RELOAD env var.
 	 */
-	private static $conf_reload = 120;
+	private static $conf_reload = 20;
 
 	/**
 	 * Statistics publishing interval.
@@ -81,7 +81,7 @@ class Engine {
 	 * @since   2.0.0
 	 * @var     integer   $statistics   Statistics publishing interval in seconds. Overridden by WF_STAT_PUBLISH env var.
 	 */
-	private static $statistics = 60;
+	private static $statistics = 30;
 
 	/**
 	 * Running mode.
@@ -109,7 +109,16 @@ class Engine {
 		'processed' => 0,
 		'dropped'   => 0,
 		'sent'      => 0,
+		'unsent'    => 0,
 	];
+
+	/**
+	 * Start timestamp.
+	 *
+	 * @since   2.0.0
+	 * @var     integer   $statistics   Start timestamp.
+	 */
+	private $start_time = 0;
 
 	/**
 	 * The events filters.
@@ -226,6 +235,22 @@ class Engine {
 	private $strict_isu = false;
 
 	/**
+	 * Do the host name have to be dropped?
+	 *
+	 * @since   2.0.0
+	 * @var     boolean $host_drop    Do the host name have to be dropped?
+	 */
+	private $host_drop = false;
+
+	/**
+	 * Force the host name.
+	 *
+	 * @since   2.0.0
+	 * @var     string $host_drop    Name of the host to enforce
+	 */
+	private $host_override = '';
+
+	/**
 	 * The InfluxDB2 client.
 	 *
 	 * @since   1.0.0
@@ -239,25 +264,8 @@ class Engine {
 	 * @since   1.0.0
 	 */
 	private function __construct() {
-
 		$this->get_options();
-
-
-
-		if ( ! $this->config_file ) {
-			self::$logger->emergency( 'Unable to go further: wrong configuration file or content.' );
-			//$this->abort();
-		}
-		if ( ! $this->observation ) {
-			try {
-				$client       = new InfluxClient( array_merge( $this->influx_connection, [ 'precision' => InfluxWritePrecision::MS ] ) );
-				$this->influx = $client->createWriteApi();
-			} catch ( \Throwable $e ) {
-				self::$logger->error( $e->getMessage(), [ 'code' => $e->getCode() ] );
-				$this->abort();
-			}
-		}
-
+		$this->starting = false;
 	}
 
 	/**
@@ -270,22 +278,34 @@ class Engine {
 		$options = [];
 		if ( file_exists( self::$config ) ) {
 			try {
-				$opt = json_decode( file_get_contents( self::$config, true ), true );
+				$options = json_decode( file_get_contents( self::$config, true ), true );
 			} catch ( \Throwable $e ) {
-				$this->startup_log( Logger::ERROR, $e->getMessage(), [ 'code' => $e->getCode() ] );
+				if ( $this->starting ) {
+					self::$logger->alert( sprintf( 'Unable to read configuration: %s.', $e->getMessage() ), [ 'code' => $e->getCode() ] );
+					$this->abort( 3 );
+				} else {
+					self::$logger->critical( sprintf( 'Unable to read configuration: %s. Keeping current configuration.', $e->getMessage() ), [ 'code' => $e->getCode() ] );
+					return false;
+				}
+			}
+		} else {
+			if ( $this->starting ) {
+				self::$logger->alert( 'Configuration file not found.', [ 'code' => 404 ] );
+				$this->abort( 4 );
+			} else {
+				self::$logger->critical( 'Configuration file not found. Keeping current configuration.', [ 'code' => 404 ] );
 				return false;
 			}
-			$options = $opt;
-		} else {
-			$this->startup_log( Logger::ERROR, 'Configuration file not found.', 404 );
-			return false;
 		}
 		if ( ! is_array( $options ) || 0 === count( $options ) ) {
-			$this->startup_log( Logger::ERROR, 'Configuration file seems corrupted or empty.', 204 );
-			return false;
+			if ( $this->starting ) {
+				self::$logger->alert( 'Configuration file is unreadable, corrupted or empty.', [ 'code' => 204 ] );
+				$this->abort( 5 );
+			} else {
+				self::$logger->critical( 'Configuration file is unreadable, corrupted or empty. Keeping current configuration.', [ 'code' => 204 ] );
+				return false;
+			}
 		}
-
-
 		if ( array_key_exists( 'filters', $options ) ) {
 			$this->filters = $options['filters'];
 		}
@@ -295,21 +315,82 @@ class Engine {
 		if ( array_key_exists( 'fields', $options ) ) {
 			$this->static_fields = $options['fields'];
 		}
-		if ( array_key_exists( 'unit-system', $options ) && is_array( $options['unit-system'] ) && in_array( 'strict', $options['unit-system'] ) ) {
+
+		// Sets ISU mode
+		$old = $this->strict_isu;
+		if ( array_key_exists( 'isu-mode', $options ) && 'strict' === $options['isu-mode'] ) {
 			$this->strict_isu = true;
 		}
-
-
-
-
-		if ( array_key_exists( 'influxb', $options ) ) {
-			$this->influx_connection = $options['influxb'];
-			$this->startup_log( Logger::ERROR, '---.' );
-		} else {
-			$this->startup_log( Logger::ERROR, 'Configuration file does not contain InfluxDB connection parameters.', 204 );
-			return false;
+		if ( $old !== $this->strict_isu && ! $this->starting ) {
+			if ( $this->strict_isu ) {
+				self::$logger->warning( sprintf ( 'ISU mode changed from "%s" to "%s".', 'derived', 'strict' ) );
+			} else {
+				self::$logger->warning( sprintf ( 'ISU mode changed from "%s" to "%s".', 'strict', 'derived' ) );
+			}
+		}
+		// Sets host
+		if ( array_key_exists( 'host', $options ) && is_array( $options['host'] ) ) {
+			if ( array_key_exists( 'override', $options['host'] ) && '' !== (string) $options['host']['override'] ) {
+				$this->static_tags['*']['host'] = $this->clean_tag( $options['host']['override'] );
+			} else {
+				$this->static_tags['*']['host'] = $this->clean_tag( (string) \gethostname() );
+			}
+			if ( array_key_exists( 'drop', $options['host'] ) && (bool) $options['host']['drop'] ) {
+				unset( $this->static_tags['*']['host'] );
+			}
+		}
+		// Sets InfluxDB connection
+		if ( 'observation' !== self::$running_mode ) {
+			$old = $this->influx_connection;
+			$ok  = false;
+			if ( array_key_exists( 'influxb', $options ) ) {
+				$this->influx_connection = $options['influxb'];
+				if ( $old !== $this->influx_connection ) {
+					if ( array_key_exists( 'url', $this->influx_connection ) && array_key_exists( 'org', $this->influx_connection ) && array_key_exists( 'token', $this->influx_connection ) && array_key_exists( 'bucket', $this->influx_connection ) ) {
+						try {
+							self::$logger->info( 'New InfluxDB connection settings.' );
+							if ( isset( $this->influx ) && ! $this->influx->closed ) {
+								$this->influx->close();
+								$this->influx = null;
+							}
+							$client       = new InfluxClient( array_merge( $this->influx_connection, [ 'precision' => InfluxWritePrecision::MS, 'logFile' => '/dev/null' ] ) );
+							$health       = $client->health();
+							if ( 'pass' === $health->getStatus() ) {
+								$this->influx = $client->createWriteApi();
+								$ok           = true;
+								self::$logger->info( sprintf( 'Connected to InfluxDB v%s.', $health->getVersion() ) );
+							} else {
+								$message = preg_replace('/\[.*: /miU', '', $health->getMessage() );
+								$message = str_replace( '(see https://curl.haxx.se/libcurl/c/libcurl-errors.html) ', '', $message );
+								self::$logger->error( sprintf( 'Unable to connect to InfluxDB: %s.', $message ) );
+							}
+						} catch ( \Throwable $e ) {
+							$this->influx = null;
+							self::$logger->error( sprintf( 'Unable to connect to InfluxDB: %s.', $e->getMessage() ), [ 'code' => $e->getCode() ] );
+						}
+					}
+				} else {
+					$ok = true;
+				}
+			}
+			if ( ! $ok ) {
+				self::$logger->error( 'InfluxDB connection settings are incorrect, nothing will be send.', [ 'code' => 503 ] );
+			}
 		}
 		return true;
+	}
+
+	/**
+	 * Clean a tag.
+	 *
+	 * @param string    $tag    The tag to clean.
+	 * @return string   The cleaned tag.
+	 * @since   2.0.0
+	 */
+	private function clean_tag( $tag ) {
+		$result = str_replace( [ ',', ';' ], '', $tag );
+		$result = str_replace( ' ', '\ ', $result );
+		return $result;
 	}
 
 	/**
@@ -335,6 +416,9 @@ class Engine {
 		$items = $initial;
 		if ( array_key_exists( '*', $additional ) ) {
 			$items = array_merge( $items, $additional['*'] );
+		}
+		if ( array_key_exists( substr( $id, 0, 2 ) . '*', $additional ) ) {
+			$items = array_merge( $items, $additional[ substr( $id, 0, 2 ) . '*' ] );
 		}
 		if ( array_key_exists( $id, $additional ) ) {
 			$items = array_merge( $items, $additional[ $id ] );
@@ -661,11 +745,11 @@ class Engine {
 		try {
 			$d = @\json_decode( $data, true );
 			if ( \json_last_error() !== JSON_ERROR_NONE ) {
-				self::$logger->debug( 'Message dropped: not a valid JSON element.' );
+				$this->stat['dropped']++;
 				return;
 			}
 		} catch ( \Throwable $e ) {
-			self::$logger->debug( 'Message dropped: ' . $e->getMessage(), [ 'code' => $e->getCode() ] );
+			$this->stat['dropped']++;
 			return;
 		}
 		if ( array_key_exists( 'type', $d ) && array_key_exists( 'serial_number', $d ) ) {
@@ -674,7 +758,7 @@ class Engine {
 				self::$devices[] = $device['id'];
 				self::$logger->notice( sprintf ( 'New %s detected: %s', $device['type'], $device['id'] ), [ 'code' => 666 ] );
 			}
-			if ( $this->observation ) {
+			if ( 'observation' === self::$running_mode ) {
 				return;
 			} else {
 				if ( in_array( $d['type'], $this->filters ) ) {
@@ -684,17 +768,30 @@ class Engine {
 					}
 					foreach ($lines as $line ) {
 						try {
-							$this->influx->write( $line );
+							if ( isset( $this->influx ) ) {
+								$this->influx->write( $line );
+								$this->stat['sent']++;
+							} else {
+								$this->stat['unsent']++;
+							}
 						} catch ( \Throwable $e ) {
-							self::$logger->warning( 'Unable to write a record: ' . $e->getMessage(), [ 'code' => $e->getCode() ] );
+							$this->stat['unsent']++;
+							preg_match('/"message":"(.*)"\}/Ui', $e->getMessage(), $matches);
+							if ( 1 < count( $matches ) && '' !== $matches[1] ) {
+								$message = str_replace( '\"', '"', $matches[1] ) . '.';
+							} else {
+								$message = $e->getMessage();
+							}
+							self::$logger->warning( 'Unable to write a record: ' . $message, [ 'code' => $e->getCode() ] );
 						}
 					}
+					$this->stat['processed']++;
 				} else {
-					self::$logger->debug( sprintf( 'Message dropped: %s event filtered.', $d['type'] ) );
+					$this->stat['dropped']++;
 				}
 			}
 		} else {
-			self::$logger->debug( 'Message dropped: not a WeatherFlow event.' );
+			$this->stat['dropped']++;
 			return;
 		}
 	}
@@ -705,9 +802,9 @@ class Engine {
 	 * @since   2.0.0
 	 */
 	private function inform() {
-		self::$logger->notice( 'Starting ' . WF_NAME . ' v' . WF_VERSION . ' engine' );
+		self::$logger->notice( sprintf( 'Starting %s v%s in %s mode.', WF_NAME, WF_VERSION, self::$running_mode ) );
 		if ( $this->strict_isu ) {
-			self::$logger->warning( WF_NAME . ' running in strict-ISU mode.' );
+			self::$logger->warning( 'Strict-ISU activated.' );
 		}
 	}
 
@@ -727,13 +824,19 @@ class Engine {
 		}
 		$ws_worker->onWorkerStart = function( $worker ) {
 			Timer::add(self::$conf_reload, function () {
-				self::$logger->alert( '----- RELOADING CONFIGURATION' );
+				$this->get_options();
 			} );
 			Timer::add(self::$statistics, function () {
-				self::$logger->alert( '===== PUBLISHING STATISTICS' );
+				$tmp = [];
+				foreach ( $this->stat as $key => $count ) {
+					$tmp[] = $key . '=' . $count;
+				}
+				$duration = new Duration( time() - $this->start_time );
+				self::$logger->info( sprintf( 'Stats: %s in %s.', implode( ', ', $tmp ), $duration->humanize() ) );
 			} );
 			self::$logger->notice( 'Worker launched.' );
 			self::$logger->debug( 'Started listening on UDP port 50222.' );
+			$this->start_time = time();
 		};
 		$ws_worker->onWorkerStop = function( $worker ) {
 			self::$logger->debug( 'Stopped listening on UDP port 50222.' );
@@ -746,7 +849,6 @@ class Engine {
 			$this->process( $data );
 		};
 		try {
-			$this->starting = false;
 			SilentWorker::runAll();
 		} catch ( \Throwable $e ) {
 			self::$logger->emergency( sprintf( 'Unable to launch worker: %s.', $e->getMessage() ), [ 'code' => $e->getCode() ] );
@@ -814,6 +916,8 @@ class Engine {
 		if ( in_array('-d', $argv, true ) ) {
 			self::$running_mode = 'daemon';
 		}
+		self::$logger->debug( sprintf( 'Configuration reloading: %ds.', self::$conf_reload ) );
+		self::$logger->debug( sprintf( 'Statisctics publishing: %ds.', self::$statistics ) );
 	}
 
 	/**
