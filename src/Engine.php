@@ -14,7 +14,8 @@
 
 namespace WeatherFlux;
 
-use Workerman\Timer;
+use ObservableWorker\Worker;
+use ObservableWorker\Timer;
 use Khill\Duration\Duration;
 use WeatherFlux\Logging\ConsoleHandler;
 use WeatherFlux\Logging\DockerConsoleHandler;
@@ -837,7 +838,7 @@ class Engine {
 	private function start() {
 		$this->inform();
 		try {
-			$ws_worker = new SilentWorker( 'udp://0.0.0.0:50222' );
+			$ws_worker = new Worker( 'udp://0.0.0.0:50222' );
 			$ws_worker->count = 1;
 		} catch ( \Throwable $e ) {
 			self::$logger->emergency( sprintf( 'Unable to create worker: %s.', $e->getMessage() ), [ 'code' => $e->getCode() ] );
@@ -866,7 +867,7 @@ class Engine {
 			$this->process( $data );
 		};
 		try {
-			SilentWorker::runAll();
+			Worker::runAll();
 		} catch ( \Throwable $e ) {
 			self::$logger->emergency( sprintf( 'Unable to launch worker: %s.', $e->getMessage() ), [ 'code' => $e->getCode() ] );
 			$this->abort( 3 );
