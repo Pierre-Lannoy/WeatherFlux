@@ -12,7 +12,7 @@ You don't have to restart WeatherFlux when modifying its settings: the configura
 
 ## Environment variables
 
-### `WF_CONF_RELOAD` variable
+### `WF_CONF_RELOAD`
 
 To change the time interval between two automatic reloads of the configuration file, you can give it a value in seconds.
 
@@ -20,8 +20,8 @@ To change the time interval between two automatic reloads of the configuration f
 pierre@dev:~$ export WF_CONF_RELOAD=300
 ```
 
-If you do not specify anything, the default value is 120 seconds.
+If you do not declare this variable, the default value used by WeatherFlux is 120 seconds.
 
-### `WF_STAT_PUBLISH` variable
+### `WF_STAT_PUBLISH`
 
 -

@@ -8,7 +8,7 @@
  *
  * @author    Pierre Lannoy <https://pierre.lannoy.fr/>
  * @copyright Pierre Lannoy <https://pierre.lannoy.fr/>
- * @link      https://github.com/Pierre-Lannoy/WeatherFlux"
+ * @link      https://github.com/Pierre-Lannoy/WeatherFlux
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
