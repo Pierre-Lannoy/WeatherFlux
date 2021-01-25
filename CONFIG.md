@@ -1,6 +1,6 @@
 # Configuring WeatherFlux
 
-The configuration of WeatherFlux is done by settings parameter in the file `config.json`. This file can be found:
+The configuration of WeatherFlux is done by setting parameters in the file `config.json`. This file can be found:
 
 * in the host-mounted `/usr/share/weatherflux/config`volume, if ran in Docker;
 * in the `./vendor/weatherflux/weatherflux/` directory if ran as standalone tool.
