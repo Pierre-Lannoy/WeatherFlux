@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Improved startup sequence.
 - Improved logging mechanism.
 - Improved error handling.
+- Now built on [ObservableWorker](https://github.com/Pierre-Lannoy/ObservableWorker).
 
 ### Removed
 - [BC] `config-sample.php` file as it is now unused.

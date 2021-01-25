@@ -53,6 +53,14 @@ class Engine {
 	private static $docker = false;
 
 	/**
+	 * Should I log?
+	 *
+	 * @since   2.0.0
+	 * @var     boolean $do_log    Should I log?
+	 */
+	private static $do_log = true;
+
+	/**
 	 * Configuration filename.
 	 *
 	 * @since   2.0.0
@@ -349,7 +357,9 @@ class Engine {
 				if ( $old !== $this->influx_connection ) {
 					if ( array_key_exists( 'url', $this->influx_connection ) && array_key_exists( 'org', $this->influx_connection ) && array_key_exists( 'token', $this->influx_connection ) && array_key_exists( 'bucket', $this->influx_connection ) ) {
 						try {
-							self::$logger->info( 'New InfluxDB connection settings.' );
+							if ( ! $this->starting ) {
+								self::$logger->info( 'New InfluxDB connection settings.' );
+							}
 							if ( isset( $this->influx ) && ! $this->influx->closed ) {
 								$this->influx->close();
 								$this->influx = null;
@@ -395,12 +405,12 @@ class Engine {
 	}
 
 	/**
-	 * Initializes the instance and set its properties.
+	 * Abort execution.
 	 *
 	 * @since   1.0.0
 	 */
 	private function abort( $code ) {
-		self::$logger->emergency( 'Stopping immediately.' );
+		self::$logger->emergency( 'Stopping immediately.', [ 'code' => $code ] );
 		exit( $code );
 	}
 
@@ -859,6 +869,7 @@ class Engine {
 			self::$logger->debug( 'Stopped listening on UDP port 50222.' );
 			$this->stats();
 			self::$logger->notice( 'Worker stopped.' );
+			self::$logger->notice( sprintf( '%s v%s stopped.', WF_NAME, WF_VERSION ) );
 		};
 		$ws_worker->onError = function( $connection, $code, $msg ) {
 			self::$logger->error( $msg, [ 'code' => $code ]);
@@ -867,6 +878,7 @@ class Engine {
 			$this->process( $data );
 		};
 		try {
+			Worker::$logger = self::$logger;
 			Worker::runAll();
 		} catch ( \Throwable $e ) {
 			self::$logger->emergency( sprintf( 'Unable to launch worker: %s.', $e->getMessage() ), [ 'code' => $e->getCode() ] );
@@ -902,30 +914,35 @@ class Engine {
 		if ( self::$docker ) {
 			self::$logger->pushHandler( new DockerConsoleHandler() );
 		}
-		self::$logger->notice( 'Initializing ' . WF_NAME );
+		if ( self::$do_log ) {
+			self::$logger->notice( 'Initializing ' . WF_NAME );
+		}
 		if ( getenv( 'WF_CONF_RELOAD' ) ) {
 			$conf_reload = (int) getenv( 'WF_CONF_RELOAD' );
 			if ( $conf_reload > self::$conf_reload ) {
 				self::$conf_reload = $conf_reload;
-				self::$logger->debug( sprintf( 'Configuration reloading interval overridden. New value: %ds.',  self::$conf_reload ) );
+				if ( self::$do_log ) {
+					self::$logger->debug( sprintf( 'Configuration reloading interval overridden. New value: %ds.',  self::$conf_reload ) );
+				}
 			}
 		}
 		if ( getenv( 'WF_STAT_PUBLISH' ) ) {
 			$statistics = (int) getenv( 'WF_STAT_PUBLISH' );
 			if ( $statistics > self::$statistics ) {
 				self::$statistics = $statistics;
-				self::$logger->debug( sprintf( 'Statistics publishing interval overridden. New value: %ds.',  self::$statistics ) );
+				if ( self::$do_log ) {
+					self::$logger->debug( sprintf( 'Statistics publishing interval overridden. New value: %ds.', self::$statistics ) );
+				}
 			}
 		}
+		$argv[] = '-q';
 		if ( in_array('-c', $argv, true ) ) {
-			$argv[] = '-q';
 			if ( in_array( '-d', $argv ) ) {
 				$argv = array_diff( $argv, ['-d'] );
 			}
 			self::$running_mode = 'console';
 		}
 		if ( in_array('-o', $argv, true ) ) {
-			$argv[] = '-q';
 			if ( in_array( '-d', $argv ) ) {
 				$argv = array_diff( $argv, ['-d'] );
 			}
@@ -934,8 +951,10 @@ class Engine {
 		if ( in_array('-d', $argv, true ) ) {
 			self::$running_mode = 'daemon';
 		}
-		self::$logger->debug( sprintf( 'Configuration reloading: %ds.', self::$conf_reload ) );
-		self::$logger->debug( sprintf( 'Statisctics publishing: %ds.', self::$statistics ) );
+		if ( self::$do_log ) {
+			self::$logger->debug( sprintf( 'Configuration reloading: %ds.', self::$conf_reload ) );
+			self::$logger->debug( sprintf( 'Statistics publishing: %ds.', self::$statistics ) );
+		}
 	}
 
 	/**
@@ -946,6 +965,30 @@ class Engine {
 	 * @since   2.0.0
 	 */
 	public static function healthcheck( $config, $docker ) {
+		self::$do_log = false;
+		if ( ! isset( self::$engine ) ) {
+			self::init();
+			self::$config = $config;
+			self::$docker = $docker;
+		}
+		echo Worker::getStatus();
+	}
 
+	/**
+	 * Verify if all is ok.
+	 *
+	 * @param   string   $config    Configuration file name.
+	 * @param   boolean  $docker    True if executed in a Docker container.
+	 * @since   2.0.0
+	 */
+	public static function status( $config, $docker ) {
+		self::$do_log = false;
+		if ( ! isset( self::$engine ) ) {
+			self::init();
+			self::$config = $config;
+			self::$docker = $docker;
+		}
+		Worker::runAll();
+		echo '$$$ ' . Worker::getStatus() . ' $$$';
 	}
 }
