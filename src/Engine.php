@@ -783,7 +783,7 @@ class Engine {
 				}
 				foreach ($lines as $line ) {
 					try {
-						if ( isset( $this->influx ) && 'observation' === self::$running_mode ) {
+						if ( isset( $this->influx ) && 'observation' !== self::$running_mode ) {
 							$this->influx->write( $line );
 							$this->stat['sent']++;
 						} else {
