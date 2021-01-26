@@ -13,11 +13,11 @@
  */
 
 define( 'WF_NAME', 'WeatherFlux' );
-define( 'WF_VERSION', '2.0.4' );
+define( 'WF_VERSION', '2.0.5' );
 
 error_reporting(0);
 
-$docker = file_exists( '/.dockerenv ');
+$docker = file_exists( '/.dockerenv');
 
 if ( file_exists( __DIR__ . '/../../../vendor/autoload.php' ) ) {
 	require_once __DIR__ . '/../../../vendor/autoload.php';
