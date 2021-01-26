@@ -38,4 +38,4 @@ EXPOSE 50222/udp
 HEALTHCHECK --interval=1m --timeout=10s --start-period=10s --retries=2 \
   CMD php /usr/share/weatherflux/vendor/weatherflux/weatherflux/weatherflux.php status -h
 
-ENTRYPOINT php /usr/share/weatherflux/vendor/weatherflux/weatherflux/weatherflux.php start -c
+ENTRYPOINT php /usr/share/weatherflux/vendor/weatherflux/weatherflux/weatherflux.php start -d
