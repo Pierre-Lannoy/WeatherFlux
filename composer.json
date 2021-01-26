@@ -17,7 +17,7 @@
     "ext-json": "*",
     "ext-posix": "*",
     "monolog/monolog": "~2.2.0",
-    "observableworker/observableworker": ">=5.1.0",
+    "observableworker/observableworker": ">=5.2.0",
     "influxdata/influxdb-client-php": "~1.9.0",
     "khill/php-duration": "~1.0"
   },
