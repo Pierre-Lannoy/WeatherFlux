@@ -13,40 +13,29 @@
  */
 
 define( 'WF_NAME', 'WeatherFlux' );
-define( 'WF_VERSION', '2.0.3' );
+define( 'WF_VERSION', '2.0.4' );
 
 error_reporting(0);
 
 $docker = file_exists( '/.dockerenv ');
 
-if ( $docker ) {
-	if ( file_exists( __DIR__ . '/../../../vendor/autoload.php' ) ) {
-		require_once __DIR__ . '/../../../vendor/autoload.php';
-	} else {
-		exit( 1 );
-	}
-	if ( file_exists( __DIR__ . '/../../../config/config.json' ) ) {
-		$config = __DIR__ . '/../../../config/config.json';
-	} else {
-		$config = '';
-	}
+if ( file_exists( __DIR__ . '/../../../vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/../../../vendor/autoload.php';
+} elseif ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+
 } else {
-	if ( file_exists( __DIR__ . '/../../../vendor/autoload.php' ) ) {
-		require_once __DIR__ . '/../../../vendor/autoload.php';
-		require_once __DIR__ . '/src/autoload.php';
-	} elseif ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
-		require_once __DIR__ . '/vendor/autoload.php';
-		require_once __DIR__ . '/src/autoload.php';
-	} else {
-		exit( 1 );
-	}
-	if ( file_exists( __DIR__ . '/../../../../config/config.json' ) ) {
-		$config = __DIR__ . '/../../../../config/config.json';
-	} elseif ( file_exists( __DIR__ . '/config/config.json' ) ) {
-		$config = __DIR__ . '/config/config.json';
-	} else {
-		$config = '';
-	}
+	exit( 1 );
+}
+if ( ! $docker ) {
+	require_once __DIR__ . '/src/autoload.php';
+}
+if ( file_exists( __DIR__ . '/../../../config/config.json' ) ) {
+	$config = __DIR__ . '/../../../config/config.json';
+} elseif ( file_exists( __DIR__ . '/config/config.json' ) ) {
+	$config = __DIR__ . '/config/config.json';
+} else {
+	$config = '';
 }
 
 if ( in_array('status', $argv, true ) ) {
