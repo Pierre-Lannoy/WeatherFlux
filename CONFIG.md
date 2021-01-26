@@ -5,10 +5,13 @@ The configuration of WeatherFlux is done by setting parameters in the file `conf
 * in the host-mounted `/usr/share/weatherflux/config`volume, if ran in Docker;
 * in the `./vendor/weatherflux/weatherflux/` directory if ran as standalone tool.
 
-You don't have to restart WeatherFlux when modifying its settings: the configuration file is automatically reloaded every 2 minutes by default. If you want to modify this interval, please read [Environment Variables](#environment-variables) section.
+In most cases, you will not have to restart WeatherFlux when modifying its settings: the configuration file is automatically reloaded every 2 minutes by default. If you want to modify this interval, please read [Environment Variables](#environment-variables) section.
 
 > 💡 If you simply set the 4 `influxb` parameters in this file, all WeatherFlow messages will be sent to your InfluxDB instance with maximum level/fields details - without you having to specify anything additional.
 
+## Settings
+
+*- coming soon-*
 
 ## Environment variables
 

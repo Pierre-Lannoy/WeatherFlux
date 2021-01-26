@@ -10,7 +10,16 @@ You can run WeatherFlux on:
 
 ## WeatherFlux on Docker
 
- *- coming soon -*
+To run WeatherFlux on Docker, just type:
+
+```
+docker run -itdp 50222:50222/udp -v /my/local/path:/usr/share/weatherflux/config pierrelannoy/weatherflux:latest
+```
+
+where `/my/local/path` is a valid path on the host.
+
+Then, [adjust the settings](https://github.com/Pierre-Lannoy/WeatherFlux/blob/master/CONFIG.md) in the `/my/local/path/config.json` file.
+
 
 ## WeatherFlux as standalone tool
 
@@ -26,7 +35,7 @@ Then, creating a configuration file named `config.json`:
 mkdir ./config && cp ./vendor/weatherflux/weatherflux/config-blank.json ./config/config.json
 ```
 
-[Adjust the settings](/CONFIG.md) in this newly created file to match your environment and your needs.
+[Adjust the settings](https://github.com/Pierre-Lannoy/WeatherFlux/blob/master/CONFIG.md) in this newly created file to match your environment and your needs.
 
 ### Running WeatherFlux as standalone tool
 
