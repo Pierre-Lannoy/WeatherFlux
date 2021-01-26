@@ -15,7 +15,7 @@
 define( 'WF_NAME', 'WeatherFlux' );
 define( 'WF_VERSION', '2.0.0' );
 
-//error_reporting(0);
+error_reporting(0);
 
 $docker = file_exists( '/.dockerenv ');
 
@@ -44,10 +44,10 @@ if ( $docker ) {
 	}
 }
 
-if ( in_array('status', $argv, true ) && in_array('-h', $argv, true ) ) {
-	\WeatherFlux\Engine::healthcheck( $config, $docker );
-} elseif ( in_array('status', $argv, true ) ) {
-	\WeatherFlux\Engine::status( $config, $docker );
+if ( in_array('status', $argv, true ) ) {
+	\WeatherFlux\Engine::status( $config, $docker, in_array('-h', $argv, true ) );
+} elseif ( in_array('stop', $argv, true ) ) {
+	\WeatherFlux\Engine::stop( $config, $docker);
 } else {
 	\WeatherFlux\Engine::run( $config, $docker );
 }

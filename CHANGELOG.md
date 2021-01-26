@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - New log handler for logging in Docker logs (if running in Docker).
 - New configuration reloading (default 120s, set `WF_CONF_RELOAD` environment variable to change).
 - New statistics publishing (default 600s, set `WF_STAT_PUBLISH` environment variable to change).
+- Exit code management for Docker health-check.
+- Events have now a `hit` field allowing to visualize them with scatter plots.
 
 ### Changed
 - [BC] Configuration is now read from `config.json` file.
@@ -20,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Improved logging mechanism.
 - Improved error handling.
 - Now built on [ObservableWorker](https://github.com/Pierre-Lannoy/ObservableWorker).
+- Command line displays usage in case of wrong command/mode.
 
 ### Removed
 - [BC] `config-sample.php` file as it is now unused.
