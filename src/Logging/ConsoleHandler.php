@@ -55,7 +55,7 @@ class ConsoleHandler extends AbstractProcessingHandler {
 	public function __construct( bool $colored = true, $level = Logger::DEBUG, bool $bubble = true ) {
 		parent::__construct( $level, $bubble );
 		$this->colored = $colored;
-		if ( 1 === getmypid() ) {
+		if ( 1 !== getmypid() ) {
 			$this->stream = fopen( 'php://output', 'w' );
 		}
 	}
