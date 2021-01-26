@@ -15,7 +15,7 @@
 define( 'WF_NAME', 'WeatherFlux' );
 define( 'WF_VERSION', '2.0.0' );
 
-error_reporting(0);
+//error_reporting(0);
 
 $docker = file_exists( '/.dockerenv ');
 
@@ -31,7 +31,10 @@ if ( $docker ) {
 		$config = '';
 	}
 } else {
-	if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+	if ( file_exists( __DIR__ . '/../../../vendor/autoload.php' ) ) {
+		require_once __DIR__ . '/../../../vendor/autoload.php';
+		require_once __DIR__ . '/src/autoload.php';
+	} elseif ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 		require_once __DIR__ . '/vendor/autoload.php';
 		require_once __DIR__ . '/src/autoload.php';
 	} else {

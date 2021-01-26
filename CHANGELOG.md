@@ -3,7 +3,12 @@ All notable changes to **WeatherFlux** are documented in this *changelog*.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and **WeatherFlux** adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased - will be 2.0.0]
+## [2.0.1] - 2021-01-26
+
+### Changed
+- Improved bootstrap sequence and auto-loading.
+
+## [2.0.0] - 2021-01-26
 
 ### Added
 - Configuration is now dynamic: you can change it w/o restarting WeatherFlux.
