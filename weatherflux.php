@@ -13,9 +13,9 @@
  */
 
 define( 'WF_NAME', 'WeatherFlux' );
-define( 'WF_VERSION', '2.0.2' );
+define( 'WF_VERSION', '2.0.3' );
 
-//error_reporting(0);
+error_reporting(0);
 
 $docker = file_exists( '/.dockerenv ');
 
@@ -40,8 +40,10 @@ if ( $docker ) {
 	} else {
 		exit( 1 );
 	}
-	if ( file_exists( __DIR__ . '/config.json' ) ) {
-		$config = __DIR__ . '/config.json';
+	if ( file_exists( __DIR__ . '/../../../../config/config.json' ) ) {
+		$config = __DIR__ . '/../../../../config/config.json';
+	} elseif ( file_exists( __DIR__ . '/config/config.json' ) ) {
+		$config = __DIR__ . '/config/config.json';
 	} else {
 		$config = '';
 	}
