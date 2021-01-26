@@ -72,6 +72,8 @@ class DockerConsoleHandler extends AbstractProcessingHandler {
 	 * @since    1.2.0
 	 */
 	protected function write( array $record ): void {
-		fwrite( $this->stream, $record['formatted'] );
+		if ( $this->stream ) {
+			fwrite( $this->stream, $record['formatted'] );
+		}
 	}
 }

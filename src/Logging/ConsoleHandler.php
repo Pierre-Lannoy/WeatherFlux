@@ -34,7 +34,7 @@ class ConsoleHandler extends AbstractProcessingHandler {
 	 * @since  1.0.0
 	 * @var    resource    $stream    Maintains the stream handler.
 	 */
-	private $stream;
+	private $stream = false;
 
 	/**
 	 * Has the output to be colored?.
@@ -55,7 +55,9 @@ class ConsoleHandler extends AbstractProcessingHandler {
 	public function __construct( bool $colored = true, $level = Logger::DEBUG, bool $bubble = true ) {
 		parent::__construct( $level, $bubble );
 		$this->colored = $colored;
-		$this->stream = fopen( 'php://output', 'w' );
+		if ( 1 === getmypid() ) {
+			$this->stream = fopen( 'php://output', 'w' );
+		}
 	}
 
 	/**
@@ -72,6 +74,8 @@ class ConsoleHandler extends AbstractProcessingHandler {
 	 * @since    1.0.0
 	 */
 	protected function write( array $record ): void {
-		fwrite( $this->stream, $record['formatted'] );
+		if ( $this->stream ) {
+			fwrite( $this->stream, $record['formatted'] );
+		}
 	}
 }

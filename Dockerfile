@@ -10,7 +10,7 @@ LABEL org.label-schema.vendor = "Pierre Lannoy <https://pierre.lannoy.fr/>"
 LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.label-schema.vcs-ref=$VCS_REF
 LABEL org.label-schema.vcs-url="https://github.com/Pierre-Lannoy/WeatherFlux"
-LABEL org.label-schema.schema-version = "2.1.0"
+LABEL org.label-schema.schema-version = "2.1.1"
 
 RUN  apk update \
   && apk add wget \
@@ -35,7 +35,7 @@ VOLUME /usr/share/weatherflux/config
 VOLUME /usr/share/weatherflux/logs
 EXPOSE 50222/udp
 
-HEALTHCHECK --interval=1m --timeout=10s --start-period=10s --retries=2 \
+HEALTHCHECK --interval=5m --timeout=10s --start-period=10s --retries=2 \
   CMD php /usr/share/weatherflux/vendor/weatherflux/weatherflux/weatherflux.php status -h
 
-ENTRYPOINT php /usr/share/weatherflux/vendor/weatherflux/weatherflux/weatherflux.php start -d
+ENTRYPOINT php /usr/share/weatherflux/vendor/weatherflux/weatherflux/weatherflux.php start -c
