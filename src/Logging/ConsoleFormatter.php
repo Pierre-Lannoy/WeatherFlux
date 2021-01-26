@@ -81,7 +81,7 @@ class ConsoleFormatter implements FormatterInterface {
 		} else {
 			$message = '<no message>';
 		}
-		if ( defined( '\STDOUT' ) && posix_isatty( \STDOUT ) ) {
+		if ( defined( '\STDOUT' ) && function_exists('posix_isatty') && posix_isatty( \STDOUT ) ) {
 			$line = sprintf( "%s\033[%sm%s\033[0m %s", $line, $this->colored ? self::$colors[ Logger::toMonologLevel( $record['level'] ) ] : '', $level . ' [' . $code . ']', $message );
 		} else {
 			$line .= ' ' . $level . ' [' . $code . '] ' . $message;
