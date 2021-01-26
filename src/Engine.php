@@ -943,9 +943,9 @@ class Engine {
 	 */
 	public static function run( $config, $docker ) {
 		if ( ! isset( self::$engine ) ) {
-			self::init();
 			self::$config = $config;
 			self::$docker = $docker;
+			self::init();
 			self::$engine = new Engine();
 			self::$engine->start();
 		}
@@ -962,9 +962,9 @@ class Engine {
 	public static function status( $config, $docker, $health ) {
 		self::$do_log = false;
 		if ( ! isset( self::$engine ) ) {
-			self::init();
 			self::$config = $config;
 			self::$docker = $docker;
+			self::init();
 			self::$engine = new Engine( false );
 			self::$engine->check( $health );
 		}
@@ -980,9 +980,9 @@ class Engine {
 	public static function stop( $config, $docker ) {
 		self::$do_log = false;
 		if ( ! isset( self::$engine ) ) {
-			self::init();
 			self::$config = $config;
 			self::$docker = $docker;
+			self::init();
 			self::$engine = new Engine( false );
 			self::$engine->do_stop();
 		}

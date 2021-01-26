@@ -3,6 +3,11 @@ All notable changes to **WeatherFlux** are documented in this *changelog*.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and **WeatherFlux** adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2021-01-26
+
+### Added
+- Compatibility with Docker 19+.
+
 ## [2.0.5] - 2021-01-26
 
 ### Changed

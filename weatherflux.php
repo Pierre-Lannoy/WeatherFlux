@@ -13,7 +13,7 @@
  */
 
 define( 'WF_NAME', 'WeatherFlux' );
-define( 'WF_VERSION', '2.0.5' );
+define( 'WF_VERSION', '2.1.0' );
 
 error_reporting(0);
 
