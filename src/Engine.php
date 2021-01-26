@@ -217,8 +217,8 @@ class Engine {
 	 * @var     array   $fields     Dynamic fields to process.
 	 */
 	private $fields = [
-		'evt_precip' => [ 'ts' ],
-		'evt_strike' => [ 'ts', 'strike_distance', 'strike_energy' ],
+		'evt_precip' => [ 'ts', 'hit' ],
+		'evt_strike' => [ 'ts', 'strike_distance', 'strike_energy', 'hit' ],
 		'rapid_wind' => [ 'ts', 'wind_speed', 'wind_direction', 'wind_sample_interval' ],
 		'obs_air' => [ 'ts', 'pressure_station', 'temperature_air', 'r-humidity', 'strike_count', 'strike_distance', 'battery', 'report_interval' ],
 		'obs_sky' => [ 'ts', 'illuminance_sun', 'uv', 'rain_accumulation', 'wind_lull', 'wind_average', 'wind_gust', 'wind_direction', 'battery', 'report_interval', 'irradiance_sun', 'rain_accumulation_local_day', 'precipitation_type', 'wind_sample_interval' ],
@@ -272,8 +272,10 @@ class Engine {
 	 *
 	 * @since   1.0.0
 	 */
-	private function __construct() {
-		$this->get_options();
+	private function __construct( $options = true ) {
+		if ( $options ) {
+			$this->get_options();
+		}
 		$this->starting = false;
 	}
 
@@ -410,7 +412,9 @@ class Engine {
 	 * @since   1.0.0
 	 */
 	private function abort( $code ) {
-		self::$logger->emergency( 'Stopping immediately.', [ 'code' => $code ] );
+		if ( self::$do_log ) {
+			self::$logger->emergency( 'Stopping immediately.', [ 'code' => $code ] );
+		}
 		exit( $code );
 	}
 
@@ -555,6 +559,7 @@ class Engine {
 		$d      = [];
 		if ( array_key_exists( 'evt', $data ) ) {
 			$d = $data['evt'];
+			$d[] = 1;
 		}
 		if ( array_key_exists( 'ob', $data ) ) {
 			$d = $data['ob'];
@@ -771,42 +776,38 @@ class Engine {
 				self::$devices[] = $device['id'];
 				self::$logger->notice( sprintf ( 'New %s detected: %s', $device['type'], $device['id'] ), [ 'code' => 666 ] );
 			}
-			if ( 'observation' === self::$running_mode ) {
-				return;
-			} else {
-				if ( in_array( $d['type'], $this->filters ) ) {
-					$lines[] = $this->format_line( $d );
-					if ( $device['is_hub'] ) {
-						$lines = array_merge( $lines, $this->special_lines( $d ) );
-					}
-					foreach ($lines as $line ) {
-						try {
-							if ( isset( $this->influx ) ) {
-								$this->influx->write( $line );
-								$this->stat['sent']++;
-							} else {
-								$this->stat['unsent']++;
-							}
-						} catch ( \Throwable $e ) {
-							$this->stat['unsent']++;
-							preg_match('/"message":"(.*)("\}|\(truncated...\))/iU', $e->getMessage(), $matches);
-							if ( 2 < count( $matches ) && '' !== $matches[1] ) {
-								$message = str_replace( '\"', '"', $matches[1] );
-								if ( str_contains( $matches[2], 'truncated' ) ) {
-									$message .= '...';
-								} else {
-									$message .= '.';
-								}
-							} else {
-								$message = $e->getMessage();
-							}
-							self::$logger->warning( 'Unable to write a record: ' . $message, [ 'code' => $e->getCode() ] );
-						}
-					}
-					$this->stat['processed']++;
-				} else {
-					$this->stat['dropped']++;
+			if ( in_array( $d['type'], $this->filters ) ) {
+				$lines[] = $this->format_line( $d );
+				if ( $device['is_hub'] ) {
+					$lines = array_merge( $lines, $this->special_lines( $d ) );
 				}
+				foreach ($lines as $line ) {
+					try {
+						if ( isset( $this->influx ) && 'observation' === self::$running_mode ) {
+							$this->influx->write( $line );
+							$this->stat['sent']++;
+						} else {
+							$this->stat['unsent']++;
+						}
+					} catch ( \Throwable $e ) {
+						$this->stat['unsent']++;
+						preg_match('/"message":"(.*)("\}|\(truncated...\))/iU', $e->getMessage(), $matches);
+						if ( 2 < count( $matches ) && '' !== $matches[1] ) {
+							$message = str_replace( '\"', '"', $matches[1] );
+							if ( str_contains( $matches[2], 'truncated' ) ) {
+								$message .= '...';
+							} else {
+								$message .= '.';
+							}
+						} else {
+							$message = $e->getMessage();
+						}
+						self::$logger->warning( 'Unable to write a record: ' . $message, [ 'code' => $e->getCode() ] );
+					}
+				}
+				$this->stat['processed']++;
+			} else {
+				$this->stat['dropped']++;
 			}
 		} else {
 			$this->stat['dropped']++;
@@ -846,6 +847,7 @@ class Engine {
 	 * @since   1.0.0
 	 */
 	private function start() {
+		Worker::$processTitle = WF_NAME;
 		$this->inform();
 		try {
 			$ws_worker = new Worker( 'udp://0.0.0.0:50222' );
@@ -863,6 +865,9 @@ class Engine {
 			} );
 			self::$logger->notice( 'Worker launched.' );
 			self::$logger->debug( 'Started listening on UDP port 50222.' );
+			if ( 'console' === self::$running_mode || 'observation' === self::$running_mode ) {
+				self::$logger->debug( 'Press Ctrl+C to quit.' );
+			}
 			$this->start_time = time();
 		};
 		$ws_worker->onWorkerStop = function( $worker ) {
@@ -887,6 +892,49 @@ class Engine {
 	}
 
 	/**
+	 * Start the engine for status check.
+	 *
+	 * @param   boolean     $health     Are-we in health-check query?
+	 * @since   2.0.0
+	 */
+	private function check( $health = false ) {
+		Worker::$processTitle = WF_NAME;
+		self::$logger->notice( sprintf( 'Querying %s v%s status.', WF_NAME, WF_VERSION ) );
+		try {
+			new Worker( 'udp://0.0.0.0:50222' );
+		} catch ( \Throwable $e ) {
+			$this->abort( 1 );
+		}
+		try {
+			Worker::$logger = self::$logger;
+			Worker::runAll();
+		} catch ( \Throwable $e ) {
+			$this->abort( 1 );
+		}
+	}
+
+	/**
+	 * Start the engine for status check.
+	 *
+	 * @since   2.0.0
+	 */
+	private function do_stop() {
+		Worker::$processTitle = WF_NAME;
+		self::$logger->notice( sprintf( 'Stopping %s v%s via command-line.', WF_NAME, WF_VERSION ) );
+		try {
+			new Worker( 'udp://0.0.0.0:50222' );
+		} catch ( \Throwable $e ) {
+			$this->abort( 1 );
+		}
+		try {
+			Worker::$logger = self::$logger;
+			Worker::runAll();
+		} catch ( \Throwable $e ) {
+			$this->abort( 1 );
+		}
+	}
+
+	/**
 	 * Create an instance if needed, then run it.
 	 *
 	 * @param   string   $config    Configuration file name.
@@ -904,12 +952,59 @@ class Engine {
 	}
 
 	/**
+	 * Verify if all is ok.
+	 *
+	 * @param   string   $config    Configuration file name.
+	 * @param   boolean  $docker    True if executed in a Docker container.
+	 * @param   boolean  $health    Just verify health.
+	 * @since   2.0.0
+	 */
+	public static function status( $config, $docker, $health ) {
+		self::$do_log = false;
+		if ( ! isset( self::$engine ) ) {
+			self::init();
+			self::$config = $config;
+			self::$docker = $docker;
+			self::$engine = new Engine( false );
+			self::$engine->check( $health );
+		}
+	}
+
+	/**
+	 * Stops WeatherFlux.
+	 *
+	 * @param   string   $config    Configuration file name.
+	 * @param   boolean  $docker    True if executed in a Docker container.
+	 * @since   2.0.0
+	 */
+	public static function stop( $config, $docker ) {
+		self::$do_log = false;
+		if ( ! isset( self::$engine ) ) {
+			self::init();
+			self::$config = $config;
+			self::$docker = $docker;
+			self::$engine = new Engine( false );
+			self::$engine->do_stop();
+		}
+	}
+
+	/**
 	 * Initializes class.
 	 *
 	 * @since   2.0.0
 	 */
 	private static function init() {
 		global $argv;
+		$allowed = false;
+		foreach( [ 'start', 'stop', 'status' ] as $command ) {
+			if ( in_array( $command, $argv ) ) {
+				$allowed = true;
+			}
+		}
+		Worker::$usage = "Usage: php weatherflux.php <command> [mode]\nCommands: \nstart\t\tStart WeatherFlux.\n\t\tUse mode -d to start in DAEMON mode.\n\t\tUse mode -c to start in CONSOLE mode.\n\t\tUse mode -o to start in OBSERVATION mode.\nstop\t\tStop WeatherFlux.\n\t\tUse mode -g to stop gracefully.\nstatus\t\tGet WeatherFlux live status.\n\t\tUse mode -h to return health-check as exit code.\n";
+		if ( ! $allowed || ( in_array( 'start', $argv ) && ! in_array( '-d', $argv ) && ! in_array( '-o', $argv ) && ! in_array( '-c', $argv ) )) {
+			exit (Worker::$usage);
+		}
 		self::$logger = new Logger('weatherflux', [ new ConsoleHandler() ] );
 		if ( self::$docker ) {
 			self::$logger->pushHandler( new DockerConsoleHandler() );
@@ -951,44 +1046,15 @@ class Engine {
 		if ( in_array('-d', $argv, true ) ) {
 			self::$running_mode = 'daemon';
 		}
+		if ( in_array('status', $argv, true ) ) {
+			self::$running_mode = 'status / health-check';
+			if ( ! in_array('-h', $argv, true ) ) {
+				$argv[] = '-d';
+			}
+		}
 		if ( self::$do_log ) {
 			self::$logger->debug( sprintf( 'Configuration reloading: %ds.', self::$conf_reload ) );
 			self::$logger->debug( sprintf( 'Statistics publishing: %ds.', self::$statistics ) );
 		}
-	}
-
-	/**
-	 * Verify if all is ok.
-	 *
-	 * @param   string   $config    Configuration file name.
-	 * @param   boolean  $docker    True if executed in a Docker container.
-	 * @since   2.0.0
-	 */
-	public static function healthcheck( $config, $docker ) {
-		self::$do_log = false;
-		if ( ! isset( self::$engine ) ) {
-			self::init();
-			self::$config = $config;
-			self::$docker = $docker;
-		}
-		echo Worker::getStatus();
-	}
-
-	/**
-	 * Verify if all is ok.
-	 *
-	 * @param   string   $config    Configuration file name.
-	 * @param   boolean  $docker    True if executed in a Docker container.
-	 * @since   2.0.0
-	 */
-	public static function status( $config, $docker ) {
-		self::$do_log = false;
-		if ( ! isset( self::$engine ) ) {
-			self::init();
-			self::$config = $config;
-			self::$docker = $docker;
-		}
-		Worker::runAll();
-		echo '$$$ ' . Worker::getStatus() . ' $$$';
 	}
 }
