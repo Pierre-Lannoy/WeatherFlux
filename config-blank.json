@@ -12,34 +12,18 @@
   "isu-mode":"derived",
   "filters":["evt_precip","evt_strike","rapid_wind","obs_air","obs_sky","obs_st","device_status","hub_status"],
   "tags": {
-    "*": {
-      "location":"My Location"
-    },
     "HB*": {
-      "station":"weather",
       "model":"WeatherFlow Hub"
     },
     "AR*": {
-      "station":"weather",
       "model":"WeatherFlow Air"
     },
     "SK*":{
-      "station":"weather",
       "model":"WeatherFlow Sky"
     },
     "ST*":{
-      "station":"weather",
       "model":"WeatherFlow Tempest"
     }
   },
-  "fields":{
-    "*":{
-      "latitude":50.7045,
-      "longitude":3.1354,
-      "altitude":55
-    },
-    "SK-00000700":{
-      "altitude":60
-    }
-  }
+  "fields":{}
 }
