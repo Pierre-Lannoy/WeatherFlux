@@ -23,7 +23,7 @@ composer require weatherflux/weatherflux
 Then, creating a configuration file named `config.json`:
 
 ```console
-cp vendor/weatherflux/weatherflux/config-sample.json vendor/weatherflux/weatherflux/config.json
+cp ./vendor/weatherflux/weatherflux/config-blank.json ./vendor/weatherflux/weatherflux/config.json
 ```
 
 [Adjust the settings](/CONFIG.md) in this newly created file to match your environment and your needs.
