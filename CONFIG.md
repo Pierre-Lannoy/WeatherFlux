@@ -66,7 +66,7 @@ This mandatory section lets you tell to WeatherFlux which Weatherflow message ty
 - "obs_sky": sent every minute by Sky module (all measurements);
 - "obs_st": sent every minute by Tempest module (all measurements);
 - "device_status": sent every minute by all modules (status);
-- "hub_status": sent every minute by all hubs (status);
+- "hub_status": sent every minute by all hubs (status).
 
 A correct `filters` section could be:
 
@@ -95,7 +95,7 @@ In the following example, all devices will be tagged with their corresponding mo
 "tags": {
   "*": {
     "placement":"outdoor"
-  }
+  },
   "HB*": {
     "model":"WeatherFlow Hub",
     "placement":"indoor"
@@ -108,7 +108,7 @@ In the following example, all devices will be tagged with their corresponding mo
   },
   "ST*":{
     "model":"WeatherFlow Tempest"
-  }
+  },
   "AR-00007949": {
     "placement":"indoor"
   },
