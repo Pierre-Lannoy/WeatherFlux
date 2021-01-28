@@ -10,3 +10,4 @@
 /hooks export-ignore
 /composer-install.sh export-ignore
 /Dockerfile export-ignore
+/medias export-ignore
