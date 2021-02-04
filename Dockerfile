@@ -10,7 +10,7 @@ LABEL org.label-schema.vendor = "Pierre Lannoy <https://pierre.lannoy.fr/>"
 LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.label-schema.vcs-ref=$VCS_REF
 LABEL org.label-schema.vcs-url="https://github.com/Pierre-Lannoy/WeatherFlux"
-LABEL org.label-schema.schema-version = "2.1.2"
+LABEL org.label-schema.schema-version = "2.1.3"
 
 RUN  apk update \
   && apk add wget \
