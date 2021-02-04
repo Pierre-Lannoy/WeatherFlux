@@ -356,7 +356,7 @@ class Engine {
 			$ok  = false;
 			if ( array_key_exists( 'influxb', $options ) ) {
 				$this->influx_connection = $options['influxb'];
-				if ( $old !== $this->influx_connection ) {
+				if ( $old !== $this->influx_connection || ! isset( $this->influx ) ) {
 					if ( array_key_exists( 'url', $this->influx_connection ) && array_key_exists( 'org', $this->influx_connection ) && array_key_exists( 'token', $this->influx_connection ) && array_key_exists( 'bucket', $this->influx_connection ) ) {
 						try {
 							if ( ! $this->starting ) {
@@ -794,7 +794,7 @@ class Engine {
 						preg_match('/"message":"(.*)("\}|\(truncated...\))/iU', $e->getMessage(), $matches);
 						if ( 2 < count( $matches ) && '' !== $matches[1] ) {
 							$message = str_replace( '\"', '"', $matches[1] );
-							if ( str_contains( $matches[2], 'truncated' ) ) {
+							if ( false !== strpos( $matches[2], 'truncated' ) ) {
 								$message .= '...';
 							} else {
 								$message .= '.';
@@ -899,7 +899,9 @@ class Engine {
 	 */
 	private function check( $health = false ) {
 		Worker::$processTitle = WF_NAME;
-		self::$logger->notice( sprintf( 'Querying %s v%s status.', WF_NAME, WF_VERSION ) );
+		if ( 'status / health-check' !== self::$running_mode ) {
+			self::$logger->notice( sprintf( 'Querying %s v%s status.', WF_NAME, WF_VERSION ) );
+		}
 		try {
 			new Worker( 'udp://0.0.0.0:50222' );
 		} catch ( \Throwable $e ) {
