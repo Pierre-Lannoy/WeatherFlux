@@ -3,10 +3,22 @@ All notable changes to **WeatherFlux** are documented in this *changelog*.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and **WeatherFlux** adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.3] - 2021-02-04
+
+### Changed
+- If WeatherFlux was unable to connect to InfluxDB, it will retry each time the configuration is reloaded - even if there's no changes.
+
+### Fixed
+- There's some PHP error or warning with PHP 7.x.
+- Some log lines may have (unneeded) extra whitespaces.
+
+### Removed
+- Log messages when querying status with `-h` flag.
+
 ## [2.1.2] - 2021-01-26
 
 ### Changed
-- Dissociated logging mechanisms for interractive/ Docker in console mode.
+- Dissociated logging mechanisms for interractive / Docker in console mode.
 
 ## [2.1.1] - 2021-01-26
 
