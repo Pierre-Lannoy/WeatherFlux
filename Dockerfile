@@ -1,17 +1,19 @@
 FROM php:8-cli-alpine
 
-ARG BUILD_DATE
-ENV BUILD_DATE $BUILD_DATE
-ENV BUILD_VERSION ${SOURCE_BRANCH%-docker}
+ARG IMAGE_BUILD_DATE
+ENV IMAGE_BUILD_DATE $IMAGE_BUILD_DATE
+
+ARG IMAGE_SOURCE_COMMIT
+ENV IMAGE_SOURCE_COMMIT $IMAGE_SOURCE_COMMIT
 
 LABEL org.label-schema.name = "WeatherFlux"
 LABEL org.label-schema.description = "A gateway to listen WeatherFlow stations on a local network and write weather data in InfluxDB 2."
 LABEL org.label-schema.url="https://github.com/Pierre-Lannoy/WeatherFlux"
 LABEL org.label-schema.vendor = "Pierre Lannoy <https://pierre.lannoy.fr/>"
-LABEL org.label-schema.build-date=$BUILD_DATE
-LABEL org.label-schema.vcs-ref=$SOURCE_BRANCH
+LABEL org.label-schema.build-date=$IMAGE_BUILD_DATE
+LABEL org.label-schema.vcs-ref=$GITHUB_SOURCE_COMMIT
 LABEL org.label-schema.vcs-url="https://github.com/Pierre-Lannoy/WeatherFlux"
-LABEL org.label-schema.schema-version = $BUILD_VERSION
+LABEL org.label-schema.schema-version = "latest"
 
 RUN  apk update \
   && apk add wget \
