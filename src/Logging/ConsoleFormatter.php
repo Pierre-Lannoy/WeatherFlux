@@ -70,7 +70,7 @@ class ConsoleFormatter implements FormatterInterface {
 	 */
 	public function format( array $record ): string {
 		$line  = date( 'Y-m-d H:i:s' ) . ' ';
-		$level = str_pad ( Logger::getLevelName( $record['level'] ), 10, ' ', STR_PAD_RIGHT );
+		$level = str_pad ( trim( Logger::getLevelName( $record['level'] ) ), 10, ' ', STR_PAD_RIGHT );
 		if ( array_key_exists( 'context', $record ) && array_key_exists( 'code', $record['context'] ) ) {
 			$code = str_pad ( (string) (int) $record['context']['code'], 3, '0', STR_PAD_LEFT );
 		} else {
@@ -84,7 +84,7 @@ class ConsoleFormatter implements FormatterInterface {
 		if ( defined( '\STDOUT' ) && function_exists('posix_isatty') && posix_isatty( \STDOUT ) ) {
 			$line = sprintf( "%s\033[%sm%s\033[0m %s", $line, $this->colored ? self::$colors[ Logger::toMonologLevel( $record['level'] ) ] : '', $level . ' [' . $code . ']', $message );
 		} else {
-			$line .= ' ' . $level . ' [' . $code . '] ' . $message;
+			$line .= $level . ' [' . $code . '] ' . $message;
 		}
 		return $line . PHP_EOL;
 	}
