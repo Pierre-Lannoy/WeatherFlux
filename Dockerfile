@@ -11,9 +11,9 @@ LABEL org.label-schema.description = "A gateway to listen WeatherFlow stations o
 LABEL org.label-schema.url="https://github.com/Pierre-Lannoy/WeatherFlux"
 LABEL org.label-schema.vendor = "Pierre Lannoy <https://pierre.lannoy.fr/>"
 LABEL org.label-schema.build-date=$IMAGE_BUILD_DATE
-LABEL org.label-schema.vcs-ref=$GITHUB_SOURCE_COMMIT
+LABEL org.label-schema.vcs-ref=$IMAGE_SOURCE_COMMIT
 LABEL org.label-schema.vcs-url="https://github.com/Pierre-Lannoy/WeatherFlux"
-LABEL org.label-schema.schema-version = "latest"
+LABEL org.label-schema.schema-version = "1.2.4"
 
 RUN  apk update \
   && apk add wget \
