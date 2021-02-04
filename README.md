@@ -28,7 +28,7 @@ Then, [adjust the settings](https://github.com/Pierre-Lannoy/WeatherFlux/blob/ma
 ![Packagist License](https://img.shields.io/packagist/l/weatherflux/weatherflux?style=flat-square)
 
 If you don't want - or can't - use the dockerized version of WeatherFlux, you can use it as a standalone tool. If so, installing WeatherFlux is simple as:
-
+ 
 ```
 composer require weatherflux/weatherflux
 ```
